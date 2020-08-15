@@ -1,4 +1,8 @@
-# React
+# React - The Complete Guide (incl Hooks, React Router, Redux)
+This is a repository for the Udemy course "React - The Complete Guide (incl Hooks, React Router, Redux)". This repository README contains general tips and notes that I like to keep in mind. If you navigate to the folders you will see the READMEs of each section of the course. The outer level also contains the source code for the projects that were created in this course.
+
+## Certificate
+TODO
 
 ## React.memo
 Wrapping a component with React.memo causes it to only re-render when the props change.
