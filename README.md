@@ -4,6 +4,12 @@ This is a repository for the Udemy course "React - The Complete Guide (incl Hook
 ## Certificate
 TODO
 
+## React.Fragment
+TODO
+
+## Higher Order Components (HOCs)
+TODO
+
 ## React.memo
 Wrapping a component with React.memo causes it to only re-render when the props change.
 By default, react will always rerender the component if the parent is changed.
