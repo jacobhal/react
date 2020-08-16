@@ -37,7 +37,24 @@ ReactDOM.render(<Person name="Jacob" age="25" />, document.querySelector('#perso
 The example above shows how we could render a Person component and pass in values for the name and the age.
 
 ## Why React?
-
-## Single Page vs Multi Page Applications
+* UI State becomes difficult to manage with vanilla JavaScript.
+* Focus on business logic, not on preventing your App from exploding.
+* React has a big development team, so chances are that their code is much better than you could do yourself.
+* Huge Ecosystem, active community, high performance.
 
 ## React Alternatives
+* Angular
+* Vue
+
+## Single Page vs Multi Page Applications
+There are essentially two kinds of web applications that can be built with frameworks such as React, Angular and Vue: Single Page Applications or Multi Page Applications.
+
+### Single Page Application
+* Only ONE HTML page, content is (re)rendered on client.
+* Entire page is under React's control and we get a good user experience.
+* React.render() will be called one time.
+
+### Multi Page Application
+* Multiple HTML pages, content is rendered on the server. We move between URLs or routes.
+* Each page can be rendered by React with multiple React components but to move between HTML pages we have to request it from the server.
+* React.render() will be called multiple times.
