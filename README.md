@@ -10,6 +10,9 @@ TODO
 ## Higher Order Components (HOCs)
 TODO
 
+## Controlled Components
+TODO
+
 ## React.memo
 Wrapping a component with React.memo causes it to only re-render when the props change.
 By default, react will always rerender the component if the parent is changed.
