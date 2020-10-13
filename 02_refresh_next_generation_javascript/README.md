@@ -214,3 +214,12 @@ numbers.splice(1, 0, 'Hej'); // [1, 'Hej', 2, 3, 4, 5] (insert at index 1)
 numbers.splice(4, 1, 'Hej'); // [1, 2, 3, 4, 'Hej'] (replace at index 4)
 numbers.splice(2, 2, 'Hej', 'Hallå'); // [1, 2, 'Hej', 'Hallå', 5]
 ```
+
+## Cancel default browser action in jQuery
+If you use `return false` in a jQuery function you will cancel the default browser action (such as a form submitting etc.).
+
+`return false` does the following things in the background:
+
+1. event.preventDefault();
+2. event.stopPropagation();
+3. Stops callback execution and returns immediately when called.
