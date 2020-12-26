@@ -174,6 +174,7 @@ useCallback is often used in these two scenarios:
 2. If we use useEffect and have some logic and depend on the increment function, then we don't want useEffect to fire off all the time. In this case we can make use of useCallback as well.
 
 ## useRef
+Sometimes we want to interact with the underlying DOM directly and not the virtual DOM. The useRef hook and the ref attribute gives us a way to do that.
 ```JSX
 const inputRef = useRef();
 
