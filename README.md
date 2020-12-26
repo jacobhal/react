@@ -13,9 +13,58 @@ TODO
 ## Controlled Components
 TODO
 
+## React.lazy
+React.lazy was added in React 16.6 and is a great feature to split bundles that are created for your website. Code-splitting your app can help you “lazy-load” just the things that are currently needed by the user, which can dramatically improve the performance of your app. While you haven’t reduced the overall amount of code in your app, you’ve avoided loading code that the user may never need, and reduced the amount of code needed during the initial load.
+
+With React.lazy we can tell React to load the page as usual but show a loading icon (or whatever we want) for a specific component that takes some time to load.
+
+Here is an example:
+
+```JSX
+import React, { Suspense } from 'react';
+
+const OtherComponent = React.lazy(() => import('./OtherComponent'));
+
+function MyComponent() {
+  return (
+    <div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <OtherComponent />
+      </Suspense>
+    </div>
+  );
+}
+```
+
 ## React.memo
 Wrapping a component with React.memo causes it to only re-render when the props change.
-By default, react will always rerender the component if the parent is changed.
+By default, react will always rerender the component if the parent is changed so React.memo can be very useful when a child is forced to re-render.
+
+Below is some example code using React.memo. This component will never be re-rendered unless title or releaseDate changes.
+
+```JSX
+export function Movie({ title, releaseDate }) {
+  return (
+    <div>
+      <div>Movie title: {title}</div>
+      <div>Release date: {releaseDate}</div>
+    </div>
+  );
+}
+
+export const MemoizedMovie = React.memo(Movie);
+```
+
+We can also use a custom equality resolver to define what "equality" should mean:
+
+```JSX
+function moviePropsAreEqual(prevMovie, nextMovie) {
+  return prevMovie.title === nextMovie.title
+    && prevMovie.releaseDate === nextMovie.releaseDate;
+}
+
+const MemoizedMovie2 = React.memo(Movie, moviePropsAreEqual);
+```
 
 ## useCallback
 useCallback prevents react from always recreating functions. Assume we have code like below:
