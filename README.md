@@ -11,7 +11,50 @@ TODO
 TODO
 
 ## Controlled Components
-TODO
+In React, most components are controlled components which basically means that the components are tied to data stored in a React state. Tha value of the state is bound to inputs for instance. If we have an input field with an onChange handler that does not do anything, you won't be able to type in that field. That is because we need to access the event.target.value field and update the state to modify the input field value.
+
+Below is an example of a controlled component where the state controls the value of the input field:
+```JSX
+import React, { useState } from "react";
+
+export default function App() {
+  const [inputValue, setInputValue] = useState("");
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value)
+  }
+  const handleSubmitButton = () => {
+    alert(inputValue);
+  };
+  return (
+    <div className="App">
+      <input value={inputValue} onChange={handleInputChange} />
+      <input type="submit" value="submit" onClick={handleSubmitButton} />
+    </div>
+  );
+}
+```
+
+in the above example, we use the controlled component to handle the form input value using React Hooks and every time you will type a new character, handleInputChange is called and it takes in the new value of the input and sets it in the state then you can use this value and print it inside alert when submitting use handleSubmitButton
+
+The uncontrolled component is like traditional HTML form inputs that you will not be able to handle the value by yourself but the DOM will take care of handling the value of the input and save it then you can get this value using React Ref and for example, print it inside alert when submitting or play with this value as you want.
+
+Here is an example of an uncontrolled component:
+```JSX
+import React, { useRef } from "react";
+
+export default function App() {
+  const inputRef = useRef(null);
+  const handleSubmitButton = () => {
+    alert(inputRef.current.value);
+  };
+  return (
+    <div className="App">
+      <input type="text" ref={inputRef} />
+      <input type="submit" value="submit" onClick={handleSubmitButton} />
+    </div>
+  );
+}
+```
 
 ## Dynamic imports
 Instead of downloading the entire app before users can use it, code splitting allows you to split your code into small chunks which you can then load on demand.
