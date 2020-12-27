@@ -10,6 +10,11 @@ TODO
 ## Higher Order Components (HOCs)
 TODO
 
+## The "key" value
+When you render a list of components in React you have to specify a key value, why? That is because React wants to render your application as efficiently as possible so it wants to know when to re-render elements. It is NOT advised to use the index of the list because it might have detrimental effects on performance, at least if the list is dynamic. If you delete or add an element to the list, EVERY item will get re-rendered because every id will effectively change.
+
+> TL;DR: Specify unique id:s (keys) for items in a list and DO NOT use indices.
+
 ## Controlled Components
 In React, most components are controlled components which basically means that the components are tied to data stored in a React state. Tha value of the state is bound to inputs for instance. If we have an input field with an onChange handler that does not do anything, you won't be able to type in that field. That is because we need to access the event.target.value field and update the state to modify the input field value.
 
