@@ -5,10 +5,165 @@ This is a repository for the Udemy course "React - The Complete Guide (incl Hook
 TODO
 
 ## React.Fragment
-TODO
+A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM.
 
-## Higher Order Components (HOCs)
-TODO
+```JSX
+render() {
+  return (
+    <React.Fragment> // <>
+      <ChildA />
+      <ChildB />
+      <ChildC />
+    </React.Fragment> // </>
+  );
+}
+```
+## Decoupling
+We want our components to be re-usable in multiple places but sometimes we create them without that in mind, often because they are tightly coupled to data that we receive from an API and we just put the API call in the component file. A better way to do it is to decouple the data from the component itself.
+
+This is the initial code we have that we want to decouple:
+
+```JSX
+import React, { useState, useEffect } from 'react';
+
+const SomeComponent = (props) => {
+  const [someData, setSomeData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    setLoading(true);
+    fetch('/some-data')
+      .then(response => response.json())
+      .then(data => setSomeData(data))
+      .catch(error => setError(error))
+      .finally(() => setLoading(false));
+  }, []);
+  
+  return (
+    <React.Fragment>
+      {loading && <div>{'Loading...'}</div>}
+      {!loading && error && <div>{`Error: ${error}`}</div>}
+      {!loading && !error && someData && <div>{/* INSERT SOME AMAZING UI */}</div>}
+    </React.Fragment>
+  );
+};
+```
+
+
+### Custom Hooks
+This is the custom hook:
+```JSX
+import React, { useState, useEffect } from 'react';
+
+const useSomeData = () => {
+  const cachedData = JSON.parse(localStorage.getItem('someData'));
+  const [someData, setSomeData] = useState(cachedData);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    if (!someData) {
+      setLoading(true);
+      fetch('/some-data')
+        .then(response => response.json())
+        .then(data => {
+          localStorage.setItem('someData', JSON.stringify(data));
+          return setSomeData(data);
+        })
+        .catch(error => setError(error))
+        .finally(() => setLoading(false));
+    }
+  }, []);
+  
+  return { someData, loading, error };
+};
+```
+
+New component now looks like this:
+
+```JSX
+const SomeComponent = (props) => {
+  const { someData, loading, error } = useSomeData();
+  return (
+    <React.Fragment>
+      {loading && <div>{'Loading...'}</div>}
+      {!loading && error && <div>{`Error: ${error}`}</div>}
+      {!loading && !error && someData && <div>{/* INSERT SOME AMAZING UI */}</div>}
+    </React.Fragment>
+  );
+};
+
+const AnotherComponent = (props) => {
+  const { someData, loading, error } = useSomeData();
+  return (
+    <React.Fragment>
+      {loading && <div>{'Loading...'}</div>}
+      {!loading && error && <div>{`Error: ${error}`}</div>}
+      {!loading && !error && someData && <div>{/* INSERT ANOTHER AMAZING UI */}</div>}
+    </React.Fragment>
+  );
+};
+```
+
+### Render props
+An alternative approach is using render props. Instead of a custom hook that returns someData, loading, and error, let’s create a Render Props component — SomeData — that wraps around a function (i.e., children needs to be a function), implements the data logic, and passes in someData, loading, and error into the function.
+
+```JSX
+import React, { useState, useEffect } from 'react';
+
+const SomeData = ({ children }) => {
+  // DATA FETCHING/MANAGEMENT FRAMEWORK OR LIBRARY OF YOUR CHOICE
+  return children({ someData, loading, error });
+};
+
+const SomeComponent = ({ someData, loading, error }) => (
+  <React.Fragment>
+    {loading && <div>{'Loading...'}</div>}
+    {!loading && error && <div>{`Error: ${error}`}</div>}
+    {!loading && !error && someData && <div>{/* INSERT SOME AMAZING UI */}</div>}
+  </React.Fragment>
+);
+
+const SomeComponentWithSomeData = () => (
+  <SomeData>
+    {renderProps => (<SomeComponent {...renderProps} />)}
+  </SomeData>
+);
+```
+You can replace line 4 in the snippet above with Redux, Apollo GraphQL, or any data fetching/management layer of your choice.
+
+We can now reuse SomeComponent (UI component) without SomeData (Render Props component). We can also reuse SomeData without SomeComponent.
+
+### Higher Order Components (HOCs)
+A third approach would be using HOCs. Let’s create a HOC — withSomeData — that accepts a React component as an argument, implements the data logic, and passes someData, loading, and error as props into the wrapped React component.
+
+```JSX
+
+import React, { useState, useEffect } from 'react';
+
+const withSomeData = Component => {
+  const ComponentWithSomeData = (props) => {
+    // DATA FETCHING/MANAGEMENT FRAMEWORK OR LIBRARY OF YOUR CHOICE
+    return <Component {...props} someData={someData} loading={loading} error={error} />;
+  };
+  return ComponentWithSomeData;
+};
+
+const SomeComponent = ({ someData, loading, error }) => (
+  <React.Fragment>
+    {loading && <div>{'Loading...'}</div>}
+    {!loading && error && <div>{`Error: ${error}`}</div>}
+    {!loading && !error && someData && <div>{/* INSERT SOME AMAZING UI */}</div>}
+  </React.Fragment>
+);
+
+const SomeComponentWithSomeData = withSomeData(SomeComponent); 
+```
+
+You can replace line 5 in the snippet above with Redux, Apollo GraphQL, or any data fetching/management layer of your choice.
+
+We can now reuse SomeComponent (UI component) without withSomeData (HOC). We can also reuse withSomeData without SomeComponent.
 
 ## The "key" value
 When you render a list of components in React you have to specify a key value, why? That is because React wants to render your application as efficiently as possible so it wants to know when to re-render elements. It is NOT advised to use the index of the list because it might have detrimental effects on performance, at least if the list is dynamic. If you delete or add an element to the list, EVERY item will get re-rendered because every id will effectively change.
