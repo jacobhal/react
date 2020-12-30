@@ -4,6 +4,53 @@ This is a repository for the Udemy course "React - The Complete Guide (incl Hook
 ## Certificate
 TODO
 
+## Await/async in React
+The await/async syntax is a new way of making asynchronous requests in JS and uses promises in the background (instead of using then etc. directly). An async function is a function declared with the async keyword. Async functions are instances of the AsyncFunction constructor, and the await keyword is permitted within them. The async and await keywords enable asynchronous, promise-based behavior to be written in a cleaner style, avoiding the need to explicitly configure promise chains.
+
+```JSX
+function resolveAfter2Seconds() {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve('resolved');
+    }, 2000);
+  });
+}
+
+async function asyncCall() {
+  console.log('calling');
+  const result = await resolveAfter2Seconds();
+  console.log(result);
+  // expected output: "resolved"
+}
+
+asyncCall();
+```
+
+### Parallel fetch requests
+We can wait for multiple await calls to finish like this:
+
+```JSX
+async function fetchMoviesAndCategories() {
+  const [moviesResponse, categoriesResponse] = await Promise.all([
+    fetch('/movies'),
+    fetch('/categories')
+  ]);
+
+  const movies = await moviesResponse.json();
+  const categories = await categoriesResponse.json();
+
+  return {
+    movies,
+    categories
+  };
+}
+
+fetchMoviesAndCategories().then(({ movies, categories }) => {
+  movies;     // fetched movies
+  categories; // fetched categories
+});
+```
+
 ## React.Fragment
 A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM.
 
