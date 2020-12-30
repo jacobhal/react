@@ -10,11 +10,11 @@ A common pattern in React is for a component to return multiple elements. Fragme
 ```JSX
 render() {
   return (
-    <React.Fragment> // <>
+    <React.Fragment> {/* <React.Fragment> = <> */}
       <ChildA />
       <ChildB />
       <ChildC />
-    </React.Fragment> // </>
+    </React.Fragment> {/* </React.Fragment> = </> */}
   );
 }
 ```
