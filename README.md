@@ -50,6 +50,57 @@ fetchMoviesAndCategories().then(({ movies, categories }) => {
   categories; // fetched categories
 });
 ```
+## setState Asynchronous
+
+The setState(...) method from the useState hook is __asynchronous__. This is usually not a problem but if you have multiple methods that set state after another and they all correspond to a visual change in the UI, then it could introduce race conditions.
+
+If the new state is computed using the previous state, you can pass a function to setState. The function will receive the previous value, and return an updated value. Here’s an example of a counter component that uses both forms of setState:
+
+```JSX
+function Counter({initialCount}) {
+  const [count, setCount] = useState(initialCount);
+  return (
+    <>
+      Count: {count}
+      <button onClick={() => setCount(initialCount)}>Reset</button>
+      <button onClick={() => setCount(prevCount => prevCount - 1)}>-</button>
+      <button onClick={() => setCount(prevCount => prevCount + 1)}>+</button>
+    </>
+  );
+}
+```
+
+The ”+” and ”-” buttons use the functional form, because the updated value is based on the previous value. But the “Reset” button uses the normal form, because it always sets the count back to the initial value.
+
+If your update function returns the exact same value as the current state, the subsequent rerender will be skipped completely.
+
+Below is another example of how the async behaviour of setting state can cause errors on your page:
+
+```JSX
+const [counter, setCounter] = useState(0)
+
+const handleClickBroken = () => {
+  setCounter(counter + 1)
+  console.log(`Counter is equal to ${counter}`) // the state will NOT have time to update!!!
+}
+
+const handleClickWorks = () => {
+  const newCounter = counter + 1;
+  setCounter(newCounter)
+  console.log(`Counter is equal to ${newCounter}`) // the new value will be used here since we created a new local variable
+}
+```
+
+## Lazy Initial State
+
+The initialState argument is the state used during the initial render. In subsequent renders, it is disregarded. If the initial state is the result of an expensive computation, you may provide a function instead, which will be executed only on the initial render:
+
+```JSX
+const [state, setState] = useState(() => {
+  const initialState = someExpensiveComputation(props);
+  return initialState;
+});
+```
 
 ## React.Fragment
 A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM.
