@@ -32,7 +32,7 @@ TODO
 
 Form handling in React is a well discussed topic. There are many different popular libraries for form handling and validation such as React Hook Form. In order to split larger forms into multiple components, you can pass an onChange handler to the forms' children components and update the full form state in that way. Below is a rather extensive example of such an implementation with React and Typescript:
 
-```JSX
+```TSX
 // AppInterface.tsx
 export interface IDefaultData {
   schools: string[];
@@ -51,7 +51,7 @@ export interface IPersonalData {
 }
 ```
 
-```JSX
+```TSX
 // App.tsx
 import { Form, Button } from 'semantic-ui-react';
 import React, { useState, useEffect } from 'react';
@@ -141,7 +141,7 @@ const App: React.FC = () => {
 export default App;
 ```
 
-```JSX
+```TSX
 // PersonalData.tsx
 
 import React, { useState } from 'react';
