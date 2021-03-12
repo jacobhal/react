@@ -1,10 +1,214 @@
 # React - The Complete Guide (incl Hooks, React Router, Redux)
 This is a repository for the Udemy course "React - The Complete Guide (incl Hooks, React Router, Redux)". This repository README contains general tips and notes that I like to keep in mind. If you navigate to the folders you will see the READMEs of each section of the course. The outer level also contains the source code for the projects that were created in this course.
 
+- [React - The Complete Guide (incl Hooks, React Router, Redux)](#react---the-complete-guide-incl-hooks-react-router-redux)
+  - [Certificate](#certificate)
+  - [Forms in React](#forms-in-react)
+  - [Async](#async)
+    - [Await/async in React](#awaitasync-in-react)
+      - [Parallel fetch requests](#parallel-fetch-requests)
+    - [setState Asynchronous](#setstate-asynchronous)
+  - [Lazy Initial State](#lazy-initial-state)
+  - [React.Fragment](#reactfragment)
+  - [Decoupling](#decoupling)
+    - [Custom Hooks](#custom-hooks)
+    - [Render props](#render-props)
+    - [Higher Order Components (HOCs)](#higher-order-components-hocs)
+  - [The "key" value](#the-key-value)
+  - [Controlled Components](#controlled-components)
+  - [Dynamic imports](#dynamic-imports)
+  - [React.lazy](#reactlazy)
+  - [React.memo](#reactmemo)
+  - [useCallback](#usecallback)
+  - [useRef](#useref)
+  - [useContext](#usecontext)
+  - [useReducer](#usereducer)
+  - [useMemo](#usememo)
+
 ## Certificate
 TODO
 
-## Await/async in React
+## Forms in React
+
+Form handling in React is a well discussed topic. There are many different popular libraries for form handling and validation such as React Hook Form. In order to split larger forms into multiple components, you can pass an onChange handler to the forms' children components and update the full form state in that way. Below is a rather extensive example of such an implementation with React and Typescript:
+
+```JSX
+// AppInterface.tsx
+export interface IDefaultData {
+  schools: string[];
+}
+
+export interface IFormState {
+  personalData: IPersonalData;
+}
+
+export interface IPersonalData {
+  name: string;
+  gender: string;
+  hasJob: boolean;
+  hasChidren: boolean;
+  school: string;
+}
+```
+
+```JSX
+// App.tsx
+import { Form, Button } from 'semantic-ui-react';
+import React, { useState, useEffect } from 'react';
+import { AppContext } from './AppContext';
+import { IPersonalData, IDefaultData, IFormState } from './AppInterface';
+import PersonalData from './PersonalData';
+
+const App: React.FC = () => {
+    // Fetch baseUrl from a global AppContext
+    const { baseUrl } = React.useContext(AppContext);
+
+    const [defaultData, setDefaultData] = useState<IDefaultData>({
+        schools: [],
+    });
+
+    const [formState, setFormState] = useState<IFormState>();
+
+    useEffect(
+        () => {
+            let unmounted = false;
+            
+            // Fetch data that we need to prefill some components on page load
+            const fetchData = async () => {
+                try {
+                    const response = await fetch(`${baseUrl}/api/default-data`);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        !unmounted && setDefaultData(data);
+                    }
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.log('Could not fetch data');
+                }
+            };
+
+            fetchData();
+
+            // return a cleanup function to avoid state updates after unmount
+            return () => {
+                unmounted = true;
+            };
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
+
+    const printForm = async (event: React.FormEvent) => {
+        event.preventDefault();
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formState),
+        };
+
+        try {
+            const response = await fetch(`${baseUrl}/api/print`, requestOptions);
+
+            if (response.ok) {
+                // eslint-disable-next-line no-console
+                console.log('Printing...');
+            } else {
+                // eslint-disable-next-line no-console
+                console.log('Something went wrong');
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.log('Could not print');
+        }
+    };
+
+    // Call this function from child component to update the full formState
+    const onPersonalDataChange = (personalDataState: IPersonalData) => {
+        setFormState({ ...formState, personalData: personalDataState });
+    };
+
+    return (
+        <>
+            <Form onSubmit={printForm}>
+                <PersonalData defaultData={defaultData} onChange={onPersonalDataChange} />
+                <Button>Skriv ut</Button>
+            </Form>
+        </>
+    );
+};
+
+export default App;
+```
+
+```JSX
+// PersonalData.tsx
+
+import React, { useState } from 'react';
+import { Form, Input, Select, Checkbox, Radio } from 'helium-web-ui-react';
+import { IPersonalData, IDefaultData } from './AppInterface';
+
+export interface IPersonalDataProps {
+    defaultData: IDefaultData;
+    onChange?: (personalData: IPersonalData) => void;
+}
+
+const PersonalData: React.FC<IPersonalDataProps> = (props: IPersonalDataProps) => {
+    const { onChange, defaultData } = props;
+
+    const [personalData, setPersonalData] = useState<IPersonalDataProps>({
+        name: '',
+        gender: 'Man',
+        before65: false,
+        after65: false,
+        product: '',
+    });
+
+    const handleInputChange = (event: any) => {
+        const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+        const newState = { ...personalData, [event.target.name]: value };
+
+        setPersonalData(newState);
+
+        if (onChange) {
+            onChange(newState);
+        }
+    };
+
+    return (
+        <>
+            <Form.Field>
+                <label htmlFor="name">Namn</label>
+                <Input id="name" name="name" onChange={(e) => handleInputChange(e)}></Input>
+            </Form.Field>
+            <Form.Field>
+                <Checkbox id="calculateBefore65" label="Beräkna före 65" name="before65" checked={personalData.before65} onChange={(e) => handleInputChange(e)} />
+                <Checkbox id="calculateAfter65" label="Beräkna efter 65" name="after65" checked={personalData.after65} onChange={(e) => handleInputChange(e)} />
+            </Form.Field>
+            <Form.Field>
+                <label htmlFor="radio">Kön</label>
+                <Radio id="radio" name="gender" label="Man" value="Man" checked={personalData.gender === 'Man'} onChange={(e) => handleInputChange(e)} />
+            </Form.Field>
+            <Form.Field>
+                <Radio id="woman" name="gender" label="Kvinna" value="Kvinna" checked={personalData.gender === 'Kvinna'} onChange={(e) => handleInputChange(e)} />
+            </Form.Field>
+            <Form.Field>
+                <Select id="products" name="product" fieldLabel="Produkt" onChange={(e) => handleInputChange(e)}>
+                    {defaultData.productList.map((product) => (
+                        <option key={product}>{product}</option>
+                    ))}
+                </Select>
+            </Form.Field>
+        </>
+    );
+};
+
+export default PersonalData;
+```
+
+## Async
+
+### Await/async in React
 The await/async syntax is a new way of making asynchronous requests in JS and uses promises in the background (instead of using then etc. directly). An async function is a function declared with the async keyword. Async functions are instances of the AsyncFunction constructor, and the await keyword is permitted within them. The async and await keywords enable asynchronous, promise-based behavior to be written in a cleaner style, avoiding the need to explicitly configure promise chains.
 
 ```JSX
@@ -26,7 +230,7 @@ async function asyncCall() {
 asyncCall();
 ```
 
-### Parallel fetch requests
+#### Parallel fetch requests
 We can wait for multiple await calls to finish like this:
 
 ```JSX
@@ -50,7 +254,7 @@ fetchMoviesAndCategories().then(({ movies, categories }) => {
   categories; // fetched categories
 });
 ```
-## setState Asynchronous
+### setState Asynchronous
 
 The setState(...) method from the useState hook is __asynchronous__. This is usually not a problem but if you have multiple methods that set state after another and they all correspond to a visual change in the UI, then it could introduce race conditions.
 
