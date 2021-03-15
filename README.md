@@ -518,6 +518,8 @@ export default function App() {
 }
 ```
 
+> _defaultValue_ is an attribute that is typically used for uncontrolled components to set a default initial value for an input. If you want to set initial values for controlled components, use the _value_ attribute.
+
 ## Dynamic imports
 Instead of downloading the entire app before users can use it, code splitting allows you to split your code into small chunks which you can then load on demand.
 
