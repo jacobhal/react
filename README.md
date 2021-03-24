@@ -65,6 +65,7 @@ const App: React.FC = () => {
 
     const [defaultData, setDefaultData] = useState<IDefaultData>({
         schools: [],
+        name: ''
     });
 
     const [formState, setFormState] = useState<IFormState>();
@@ -141,6 +142,8 @@ const App: React.FC = () => {
 export default App;
 ```
 
+If you want to use async default values for input fields that are fetched from an API, you can add another useEffect handler to listen for changes to that data. We then have to add the value attribute to our input field in order to reflect any state change that does not go through the field input directly. An example of that is implemented below:
+
 ```TSX
 // PersonalData.tsx
 
@@ -163,6 +166,16 @@ const PersonalData: React.FC<IPersonalDataProps> = (props: IPersonalDataProps) =
         after65: false,
         product: '',
     });
+    
+    useEffect(() => {
+        const newState = {...personalData, name: defaultData.name};
+        setPersonalData(newState);
+      
+        if(onChange) {
+          onChange(newState);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [defaultData])
 
     const handleInputChange = (event: any) => {
         const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -179,7 +192,7 @@ const PersonalData: React.FC<IPersonalDataProps> = (props: IPersonalDataProps) =
         <>
             <Form.Field>
                 <label htmlFor="name">Namn</label>
-                <Input id="name" name="name" onChange={(e) => handleInputChange(e)}></Input>
+                <Input id="name" name="name" onChange={(e) => handleInputChange(e)} value={personalData.name}></Input>
             </Form.Field>
             <Form.Field>
                 <Checkbox id="calculateBefore65" label="Beräkna före 65" name="before65" checked={personalData.before65} onChange={(e) => handleInputChange(e)} />
