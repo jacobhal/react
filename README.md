@@ -24,6 +24,7 @@ This is a repository for the Udemy course "React - The Complete Guide (incl Hook
   - [useContext](#usecontext)
   - [useReducer](#usereducer)
   - [useMemo](#usememo)
+  - [Repeatable components](#repeatable-components)
 
 ## Certificate
 TODO
@@ -768,4 +769,159 @@ You may rely on useMemo as a performance optimization, not as a semantic guarant
 
 ```JSX
 const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
+```
+
+## Repeatable components
+
+Sometimes you want to be able to dynamically create the same block of code over and over. You can do this by using names with index suffixes in your state.
+
+The interfaces:
+
+```TSX
+// AppInterface.tsx
+export interface IRepeatableComponentWrapper: {
+  tmp1: string;
+  tmp2: string;
+  repeatableComponents: { [key: string] : IRepeatableComponent }
+}
+
+export interface IRepeatableComponent {
+  test?: string;
+}
+```
+
+The repeatable component content (RepeatableComponent.tsx):
+
+```TSX
+import React, { useState } from 'react';
+import { Form, Input } from 'semantic-ui-react';
+import { IRepeatableComponent } from './AppInterface';
+
+interface IRepeatableComponentProps {
+  id: string;
+  onChange?: (repeatableComponent: IRepeatableComponent, index: string) => void;
+}
+
+const RepeatableComponent = ({id, onChange}: IRepeatableComponentProps) = {...}
+export default RepeatableComponent;
+```
+
+Repeatable component (MultipleCollapseBlock.tsx):
+
+```TSX
+import * as React from 'react';
+import { Button, Collapse, Form, Icon, Segment, ButtonProps } from ‘semantic-ui-react’;
+
+export interface IMultipleCollapseBlock {
+    ctaExpand: string;
+    ctaRemove: string;
+    ctaAdd: string;
+    max?: number;
+}
+
+export interface IMultipleCollapseBlockProps {
+    [prop: string]: any;
+    name: string;
+    ctaExpand: string;
+    ctaRemove: string;
+    ctaAdd: string;
+    onClickAddHandler?: (event: React.MouseEvent<HTMLButtonElement>, data: ButtonProps) => void;
+    onClickRemoveHandler?: (event: React.MouseEvent<HTMLButtonElement>, data: ButtonProps) => void;
+}
+
+export const MultipleCollapseBlock = ({ name, ctaExpand, ctaRemove, ctaAdd, onClickRemoveHandler, onClickAddHandler, children, max = 5 }: React.PropsWithChildren<IMultipleCollapseBlockProps>) => {
+    const isOpen = React.useCallback(() => {
+        return React.Children.count(children) > 0;
+    }, [children]);
+
+    const showAddMore = React.useCallback(() => {
+        return React.Children.count(children) < max;
+    }, [children, max]);
+
+    return (
+        <Form.Field>
+            {!isOpen() && (
+                <>
+                    <Button renderAs="pill" secondary onClick={onClickAddHandler} className="button--clean">
+                        <Icon name="add circle" />
+                        {ctaExpand}
+                    </Button>
+                </>
+            )}
+
+            {isOpen() &&
+                React.Children.map(children, (child) => {
+                    return (
+                        <div key={(child as React.Component<any>).props.id}>
+                            <div className="label-wrapper">
+                                <Button renderAs="pill" secondary onClick={onClickRemoveHandler} className="button--clean button--right" data-field-id={(child as React.Component<any>).props.id}>
+                                    <Icon name="remove circle" />
+                                    {ctaRemove}
+                                </Button>
+                            </div>
+                            <Collapse isOpened={isOpen()} collapseSpeed="normal" className="multiple-collapse--margin-bottom">
+                                <Segment secondary>{child}</Segment>
+                            </Collapse>
+                        </div>
+                    );
+                })}
+
+            {isOpen() && showAddMore() && (
+                <Button renderAs="pill" secondary onClick={onClickAddHandler} className="button--clean">
+                    <Icon name="add circle" />
+                    {ctaAdd}
+                </Button>
+            )}
+        </Form.Field>
+    );
+};
+```
+
+The parent of the repeatable component:
+
+```TSX
+import { ButtonProps } from 'semantic-ui-react';
+
+const [repeatableComponentWrapperState, setRepeatableComponentWrapperState] = useState();
+const [repeatableComponentIndex, setRepeatableComponentIndex] = React.useState<number>(0);
+const repeatableComponentStateName = 'RepeatableComponent';
+
+// Filter out any repeatable components
+const findRepeatableComponents = () => {
+  const result = Object.keys(repeatableComponentWrapperState.repeatableComponents).filter((key: string) => key.startsWith(`${repeatableComponentStateName}_`));
+  return result;
+}
+
+// Handle changes to repeatable components
+const onRepeatableComponentChange = (repeatableComponent: IRepeatableComponent, index: string) => {
+  const newState = { ...repeatableComponentWrapperState, { ...repeatableComponentWrapperState.repeatableComponents, [index]: repeatableComponent } };
+  setRepeatableComponentWrapperState(newState);
+}
+
+const handleRepeatableComponentRemove = (event: React.MouseEvent<HTMLButtonElement>, data: ButtonProps) => {
+  event.preventDefault();
+  // Id to remove must be stored as an attribute on the element
+  const fieldToRemove = data['data-field-id'];
+  // Destructure object and take out "the rest"
+  const { [`${fieldToRemove}`]: _, ...stateWithoutFieldToRemove } = repeatableComponentWrapperState.repeatableComponents;
+  const newState = { ...repeatableComponentWrapperState,  repeatableComponents: stateWithoutFieldToRemove};
+
+  setRepeatableComponentWrapperState(newState);
+}
+
+const handleRepeatableComponentAdd = (event: React.MouseEvent<HTMLButtonElement>) => {
+  event.preventDefault();
+  // Id to remove must be stored as an attribute on the element
+  const newState = { ...repeatableComponentWrapperState,  repeatableComponents: { ...repeatableComponentWrapperState.repeatableComponents, [`${repeatableComponentStateName}`]: {} }};
+  setRepeatableComponentWrapperState(newState);
+  setRepeatableComponentIndex(repeatableComponentIndex +  1);
+
+return (
+  <MultipleCollapseBlock max={10} name="test" ctaAdd="Lägg till fler" 
+ctaRemove="Ta bort" ctaExpand="Lägg till" onClickAddHandler={handleRepeatableComponentAdd} onClickRemoveHandler={handleRepeatableComponentRemove}>
+    {findRepeatableComponents().map((key) => (
+        <RepeatableComponent key={key} id={key} onChange={onRepeatableComponentChange} />
+    ))}
+  </MultipleCollapseBlock>)
+}
 ```
