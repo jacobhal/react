@@ -877,6 +877,8 @@ export const MultipleCollapseBlock = ({ name, ctaExpand, ctaRemove, ctaAdd, onCl
 };
 ```
 
+> Collapse is a component that animates the opening and closing of its children.
+
 The parent of the repeatable component:
 
 ```TSX
