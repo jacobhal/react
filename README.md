@@ -812,19 +812,13 @@ Repeatable component (MultipleCollapseBlock.tsx):
 import * as React from 'react';
 import { Button, Collapse, Form, Icon, Segment, ButtonProps } from ‘semantic-ui-react’;
 
-export interface IMultipleCollapseBlock {
-    ctaExpand: string;
-    ctaRemove: string;
-    ctaAdd: string;
-    max?: number;
-}
-
 export interface IMultipleCollapseBlockProps {
     [prop: string]: any;
     name: string;
     ctaExpand: string;
     ctaRemove: string;
     ctaAdd: string;
+    max?: number;
     onClickAddHandler?: (event: React.MouseEvent<HTMLButtonElement>, data: ButtonProps) => void;
     onClickRemoveHandler?: (event: React.MouseEvent<HTMLButtonElement>, data: ButtonProps) => void;
 }
