@@ -1,4 +1,5 @@
 # React - The Complete Guide (incl Hooks, React Router, Redux)
+
 This is a repository for the Udemy course "React - The Complete Guide (incl Hooks, React Router, Redux)". This repository README contains general tips and notes that I like to keep in mind. If you navigate to the folders you will see the READMEs of each section of the course. The outer level also contains the source code for the projects that were created in this course.
 
 - [React - The Complete Guide (incl Hooks, React Router, Redux)](#react---the-complete-guide-incl-hooks-react-router-redux)
@@ -27,6 +28,7 @@ This is a repository for the Udemy course "React - The Complete Guide (incl Hook
   - [Repeatable components](#repeatable-components)
 
 ## Certificate
+
 TODO
 
 ## Forms in React
@@ -74,7 +76,7 @@ const App: React.FC = () => {
     useEffect(
         () => {
             let unmounted = false;
-            
+
             // Fetch data that we need to prefill some components on page load
             const fetchData = async () => {
                 try {
@@ -167,11 +169,11 @@ const PersonalData: React.FC<IPersonalDataProps> = (props: IPersonalDataProps) =
         after65: false,
         product: '',
     });
-    
+
     useEffect(() => {
         const newState = {...personalData, name: defaultData.name};
         setPersonalData(newState);
-      
+
         if(onChange) {
           onChange(newState);
         }
@@ -223,6 +225,7 @@ export default PersonalData;
 ## Async
 
 ### Await/async in React
+
 The await/async syntax is a new way of making asynchronous requests in JS and uses promises in the background (instead of using then etc. directly). An async function is a function declared with the async keyword. Async functions are instances of the AsyncFunction constructor, and the await keyword is permitted within them. The async and await keywords enable asynchronous, promise-based behavior to be written in a cleaner style, avoiding the need to explicitly configure promise chains.
 
 ```JSX
@@ -245,6 +248,7 @@ asyncCall();
 ```
 
 #### Parallel fetch requests
+
 We can wait for multiple await calls to finish like this:
 
 ```JSX
@@ -268,9 +272,10 @@ fetchMoviesAndCategories().then(({ movies, categories }) => {
   categories; // fetched categories
 });
 ```
+
 ### setState Asynchronous
 
-The setState(...) method from the useState hook is __asynchronous__. This is usually not a problem but if you have multiple methods that set state after another and they all correspond to a visual change in the UI, then it could introduce race conditions.
+The setState(...) method from the useState hook is **asynchronous**. This is usually not a problem but if you have multiple methods that set state after another and they all correspond to a visual change in the UI, then it could introduce race conditions.
 
 If the new state is computed using the previous state, you can pass a function to setState. The function will receive the previous value, and return an updated value. Here’s an example of a counter component that uses both forms of setState:
 
@@ -309,6 +314,27 @@ const handleClickWorks = () => {
 }
 ```
 
+In many cases the code below will work fine without adding an anonymous function call to the setState call. However, React schedules state updates, it doesn't perform them instantly and therefore if you schedule multiple state updates simultaneously, you could be depending on an incorrect/outdated state when calculating your new state.
+
+If you use the function syntax below, React GUARANTEES that the state will be the latest snapshot, keeping all scheduled state updates in mind.
+
+```JSX
+const Component = () => {
+  const [objectState, setObjectState] = useState(initialCount);
+
+  const handleObjectStateChange = (event) => {
+    setObjectState((prevState) => { // Get previous state snapshot
+      return {...prevState, enteredTitle: "Test"};
+    });
+  }
+  return (
+    <>
+      <button onClick={handleObjectStateChange}>Set title</button>
+    </>
+  );
+}
+```
+
 ## Lazy Initial State
 
 The initialState argument is the state used during the initial render. In subsequent renders, it is disregarded. If the initial state is the result of an expensive computation, you may provide a function instead, which will be executed only on the initial render:
@@ -321,6 +347,7 @@ const [state, setState] = useState(() => {
 ```
 
 ## React.Fragment
+
 A common pattern in React is for a component to return multiple elements. Fragments let you group a list of children without adding extra nodes to the DOM.
 
 ```JSX
@@ -334,7 +361,9 @@ render() {
   );
 }
 ```
+
 ## Decoupling
+
 We want our components to be re-usable in multiple places but sometimes we create them without that in mind, often because they are tightly coupled to data that we receive from an API and we just put the API call in the component file. A better way to do it is to decouple the data from the component itself.
 
 This is the initial code we have that we want to decouple:
@@ -346,7 +375,7 @@ const SomeComponent = (props) => {
   const [someData, setSomeData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     setLoading(true);
     fetch('/some-data')
@@ -355,7 +384,7 @@ const SomeComponent = (props) => {
       .catch(error => setError(error))
       .finally(() => setLoading(false));
   }, []);
-  
+
   return (
     <React.Fragment>
       {loading && <div>{'Loading...'}</div>}
@@ -366,9 +395,10 @@ const SomeComponent = (props) => {
 };
 ```
 
-
 ### Custom Hooks
+
 This is the custom hook:
+
 ```JSX
 import React, { useState, useEffect } from 'react';
 
@@ -377,7 +407,7 @@ const useSomeData = () => {
   const [someData, setSomeData] = useState(cachedData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     if (!someData) {
       setLoading(true);
@@ -391,7 +421,7 @@ const useSomeData = () => {
         .finally(() => setLoading(false));
     }
   }, []);
-  
+
   return { someData, loading, error };
 };
 ```
@@ -423,6 +453,7 @@ const AnotherComponent = (props) => {
 ```
 
 ### Render props
+
 An alternative approach is using render props. Instead of a custom hook that returns someData, loading, and error, let’s create a Render Props component — SomeData — that wraps around a function (i.e., children needs to be a function), implements the data logic, and passes in someData, loading, and error into the function.
 
 ```JSX
@@ -447,11 +478,13 @@ const SomeComponentWithSomeData = () => (
   </SomeData>
 );
 ```
+
 You can replace line 4 in the snippet above with Redux, Apollo GraphQL, or any data fetching/management layer of your choice.
 
 We can now reuse SomeComponent (UI component) without SomeData (Render Props component). We can also reuse SomeData without SomeComponent.
 
 ### Higher Order Components (HOCs)
+
 A third approach would be using HOCs. Let’s create a HOC — withSomeData — that accepts a React component as an argument, implements the data logic, and passes someData, loading, and error as props into the wrapped React component.
 
 ```JSX
@@ -474,7 +507,7 @@ const SomeComponent = ({ someData, loading, error }) => (
   </React.Fragment>
 );
 
-const SomeComponentWithSomeData = withSomeData(SomeComponent); 
+const SomeComponentWithSomeData = withSomeData(SomeComponent);
 ```
 
 You can replace line 5 in the snippet above with Redux, Apollo GraphQL, or any data fetching/management layer of your choice.
@@ -482,14 +515,17 @@ You can replace line 5 in the snippet above with Redux, Apollo GraphQL, or any d
 We can now reuse SomeComponent (UI component) without withSomeData (HOC). We can also reuse withSomeData without SomeComponent.
 
 ## The "key" value
+
 When you render a list of components in React you have to specify a key value, why? That is because React wants to render your application as efficiently as possible so it wants to know when to re-render elements. It is NOT advised to use the index of the list because it might have detrimental effects on performance, at least if the list is dynamic. If you delete or add an element to the list, EVERY item will get re-rendered because every id will effectively change.
 
 > TL;DR: Specify unique id:s (keys) for items in a list and DO NOT use indices.
 
 ## Controlled Components
+
 In React, most components are controlled components which basically means that the components are tied to data stored in a React state. Tha value of the state is bound to inputs for instance. If we have an input field with an onChange handler that does not do anything, you won't be able to type in that field. That is because we need to access the event.target.value field and update the state to modify the input field value.
 
 Below is an example of a controlled component where the state controls the value of the input field:
+
 ```JSX
 import React, { useState } from "react";
 
@@ -510,11 +546,12 @@ export default function App() {
 }
 ```
 
-in the above example, we use the controlled component to handle the form input value using React Hooks and every time you will type a new character, handleInputChange is called and it takes in the new value of the input and sets it in the state then you can use this value and print it inside alert when submitting use handleSubmitButton
+in the above example, we use the controlled component to handle the form input value using React Hooks and every time you will type a new character, handleInputChange is called and it takes in the new value of the input and sets it in the state. By having "value={inputValue}" in the code, we have two-way data binding and bind the react state back to the value property of the input field.
 
 The uncontrolled component is like traditional HTML form inputs that you will not be able to handle the value by yourself but the DOM will take care of handling the value of the input and save it then you can get this value using React Ref and for example, print it inside alert when submitting or play with this value as you want.
 
 Here is an example of an uncontrolled component:
+
 ```JSX
 import React, { useRef } from "react";
 
@@ -535,6 +572,7 @@ export default function App() {
 > _defaultValue_ is an attribute that is typically used for uncontrolled components to set a default initial value for an input. If you want to set initial values for controlled components, use the _value_ attribute.
 
 ## Dynamic imports
+
 Instead of downloading the entire app before users can use it, code splitting allows you to split your code into small chunks which you can then load on demand.
 
 This project setup supports code splitting via dynamic import(). Its proposal is in stage 4. The import() function-like form takes the module name as an argument and returns a Promise which always resolves to the namespace object of the module.
@@ -542,6 +580,7 @@ This project setup supports code splitting via dynamic import(). Its proposal is
 Here is an example:
 
 moduleA.js
+
 ```JSX
 const moduleA = 'Hello';
 
@@ -549,6 +588,7 @@ export { moduleA };
 ```
 
 App.js
+
 ```JSX
 import React, { Component } from 'react';
 
@@ -579,8 +619,8 @@ This will make `moduleA.js` and all its unique dependencies as a separate chunk 
 
 You can also use it with `async / await` syntax if you prefer it.
 
-
 ## React.lazy
+
 React.lazy was added in React 16.6 and is a great feature to split bundles that are created for your website. Code-splitting your app can help you “lazy-load” just the things that are currently needed by the user, which can dramatically improve the performance of your app. While you haven’t reduced the overall amount of code in your app, you’ve avoided loading code that the user may never need, and reduced the amount of code needed during the initial load.
 
 With React.lazy we can tell React to load the page as usual but show a loading icon (or whatever we want) for a specific component that takes some time to load.
@@ -604,6 +644,7 @@ function MyComponent() {
 ```
 
 ## React.memo
+
 Wrapping a component with React.memo causes it to only re-render when the props change.
 By default, react will always rerender the component if the parent is changed so React.memo can be very useful when a child is forced to re-render.
 
@@ -634,6 +675,7 @@ const MemoizedMovie2 = React.memo(Movie, moviePropsAreEqual);
 ```
 
 ## useCallback
+
 useCallback prevents react from always recreating functions. Assume we have code like below:
 
 ```JSX
@@ -644,15 +686,18 @@ const increment = useCallback(() => {
 }, [setCount]);
 ```
 
-In this case, whenever count or setCount changes the function increment will be recreated. This means that we do not recreate the setCount function every time the count variable changes. 
+In this case, whenever count or setCount changes the function increment will be recreated. This means that we do not recreate the setCount function every time the count variable changes.
 
-useCallback is often used in these two scenarios:  
+useCallback is often used in these two scenarios:
+
 1. When we want to prevent functions from changing the value. Often combined with `React.memo({ increment })` or something similar. If we in this case pass in an increment function that gets recreated (and thus rerendered) every time we use it, then React.memo does nothing for us. If we make use of useCallback as in the example above and pass in that function, the increment parameter will not change on every render and React.memo will then optimize.
 
 2. If we use useEffect and have some logic and depend on the increment function, then we don't want useEffect to fire off all the time. In this case we can make use of useCallback as well.
 
 ## useRef
+
 Sometimes we want to interact with the underlying DOM directly and not the virtual DOM. The useRef hook and the ref attribute gives us a way to do that.
+
 ```JSX
 const inputRef = useRef();
 
@@ -668,6 +713,7 @@ console.log("Hello renders: ", renders.current++);
 ```
 
 useRef use cases:
+
 1. If we want a reference to a component, for instance if we want to focus a textfield whenever we click a button we can store a reference to the textfield.
 2. Store the number of times a component has rendered. Incrementing the ref does not cause a rerender so we can use it to check how many times a component renders.
 
@@ -913,7 +959,7 @@ const handleRepeatableComponentAdd = (event: React.MouseEvent<HTMLButtonElement>
   setRepeatableComponentIndex(repeatableComponentIndex +  1);
 
 return (
-  <MultipleCollapseBlock max={10} name="test" ctaAdd="Lägg till fler" 
+  <MultipleCollapseBlock max={10} name="test" ctaAdd="Lägg till fler"
 ctaRemove="Ta bort" ctaExpand="Lägg till" onClickAddHandler={handleRepeatableComponentAdd} onClickRemoveHandler={handleRepeatableComponentRemove}>
     {findRepeatableComponents().map((key) => (
         <RepeatableComponent key={key} id={key} onChange={onRepeatableComponentChange} />
